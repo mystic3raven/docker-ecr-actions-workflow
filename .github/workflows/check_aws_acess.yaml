@@ -1,6 +1,7 @@
 name: Deploy to AWS
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -13,13 +14,10 @@ jobs:
       contents: read
 
     steps:
-      # Step 1: Checkout the Code
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      # Step 2: Configure AWS Credentials Using OIDC
-      - name: Configure AWS Credentials
-        id: aws-credentials  # ID for referencing this step (optional)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::886436961042:role/GithubActionsRole
@@ -28,3 +26,4 @@ jobs:
       # Step 3: Verify AWS Access
       - name: Verify AWS Access
         run: aws s3 ls
+
