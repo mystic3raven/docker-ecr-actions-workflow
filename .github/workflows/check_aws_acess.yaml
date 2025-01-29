@@ -1,0 +1,30 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # This enables OIDC token requests
+      contents: read
+
+    steps:
+      # Step 1: Checkout the Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Configure AWS Credentials Using OIDC
+      - name: Configure AWS Credentials
+        id: aws-credentials  # ID for referencing this step (optional)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::<account-id>:role/GitHubOIDCRole
+          aws-region: us-east-1
+
+      # Step 3: Verify AWS Access
+      - name: Verify AWS Access
+        run: aws s3 ls
