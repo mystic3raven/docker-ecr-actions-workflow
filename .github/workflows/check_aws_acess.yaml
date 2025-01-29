@@ -22,7 +22,7 @@ jobs:
         id: aws-credentials  # ID for referencing this step (optional)
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::<account-id>:role/GitHubOIDCRole
+          role-to-assume: arn:aws:iam::886436961042:role/GithubActionsRole
           aws-region: us-east-1
 
       # Step 3: Verify AWS Access
