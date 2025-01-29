@@ -14,6 +14,11 @@ jobs:
       contents: read
 
     steps:
+      - name: Debug OIDC Token
+        run: |
+          echo "Request URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
+          echo "Request Token: $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+
       - name: Checkout code
         uses: actions/checkout@v2
 
