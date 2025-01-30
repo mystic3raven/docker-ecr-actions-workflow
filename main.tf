@@ -1,5 +1,14 @@
 data "aws_caller_identity" "current" {}
 
+terraform {
+  backend "s3" {
+    bucket         = "terraform-backend-primary-region"
+    key           = "terraform.tfstate"
+    region        = "us-west-2"
+    dynamodb_table = "terraform-backend-ddb"
+  }
+}
+
 # tfsec:ignore:aws-ecr-repository-customer-key
 resource "aws_ecr_repository" "repository" {
   name                 = var.repository_name
