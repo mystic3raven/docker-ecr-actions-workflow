@@ -17,3 +17,20 @@ variable "aws_account_id" {
   description = "Target AWS Account ID"
   type        = string
 }
+variable "aws_region" {
+  description = "AWS region for deployment"
+  type        = string
+  default     = "us-west-2"
+}
+
+variable "backend_s3_bucket" {
+  description = "Name of the S3 bucket for Terraform backend"
+  type        = string
+  default     = "terraform-backend-primary-region"
+}
+
+variable "backend_dynamodb_table" {
+  description = "Name of the DynamoDB table for Terraform state locking"
+  type        = string
+  default     = "terraform-backend-ddb"
+}
