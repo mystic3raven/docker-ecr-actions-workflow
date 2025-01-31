@@ -22,3 +22,4 @@ jobs:
 
       - name: Verify AWS Access
         run: aws sts get-caller-identity
+
