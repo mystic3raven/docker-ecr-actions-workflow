@@ -1,22 +1,11 @@
 name: Docker image build and publish
 on:
   workflow_dispatch:
-    - name: Reset Input Variables
-      shell: bash
-      run: |
-        echo "Resetting input variables..."
-        echo "path_to_dockerfile=" >> $GITHUB_ENV
-        echo "docker_build_dir=" >> $GITHUB_ENV
-        echo "image_tag=" >> $GITHUB_ENV
-        echo "lifecycle_policy_file=" >> $GITHUB_ENV
-        echo "backend_s3_bucket=" >> $GITHUB_ENV
-        echo "backend_iam_role=" >> $GITHUB_ENV
-        echo "github_iam_role=" >> $GITHUB_ENV
-        echo "aws_account_id=" >> $GITHUB_ENV
-        echo "aws_region=" >> $GITHUB_ENV
-        echo "backend_dynamodb_table=" >> $GITHUB_ENV
-
     inputs:
+      reset:
+        description: "Reset input variables before execution"
+        default: "true"
+        type: boolean
       path_to_dockerfile:
         description: Path to the dockerfile (default = 'Dockerfile')
         default: "e2e-test/artifact.dockerfile"
@@ -34,7 +23,7 @@ on:
         default: "e2e-test/policy.json"
         type: string
       backend_s3_bucket:
-        description: Name of the S3bucket for Terraform backend
+        description: Name of the S3 bucket for Terraform backend
         default: "terraform-backend-primary-region"
         type: string
       backend_iam_role:
@@ -57,20 +46,19 @@ on:
         default: "terraform-backend-ddb"
         type: string
 
-# concurrency required to avoid terraform lock contention during ECR provisioning
 concurrency: ci-${{ github.repository }}-docker-pipeline
 
 jobs:
+  reset-inputs:
+    if: inputs.reset == 'true'
+    uses: ./.github/workflows/reset-inputs.yml
+
   docker:
     runs-on: ubuntu-latest
-
+    needs: reset-inputs
     permissions:
       id-token: write
       contents: read
-
-    outputs:
-      image_tag: ${{ steps.build-publish.outputs.image_tag }}
-      full_image: ${{ steps.build-publish.outputs.full_image }}
 
     steps:
       - uses: actions/checkout@v3
@@ -86,14 +74,11 @@ jobs:
         with:
           terraform_wrapper: false
 
-      - name: prepare ECR repo name based on the Github repository
+      - name: Prepare ECR repo name based on the GitHub repository
         shell: bash
         run: |
           set -eux
-          # lowercase the name
           repo="${GITHUB_REPOSITORY,,}"
-
-          # replace / with _
           echo "ECR_REPO_NAME=${repo//\//_}" >> $GITHUB_ENV
 
       - name: TF init
@@ -140,19 +125,6 @@ jobs:
           docker build "${{ inputs.docker_build_dir }}" -f "${{ inputs.path_to_dockerfile }}" -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           echo "IMAGE $IMAGE_TAG is pushed to $ECR_REGISTRY/$ECR_REPOSITORY"
-          echo "image_tag=$IMAGE_TAG" 
-          echo "full_image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-      - name: Reset Input Variables
-        shell: bash
-        run: |
-          echo "Resetting input variables..."
-          echo "path_to_dockerfile=" >> $GITHUB_ENV
-          echo "docker_build_dir=" >> $GITHUB_ENV
-          echo "image_tag=" >> $GITHUB_ENV
-          echo "lifecycle_policy_file=" >> $GITHUB_ENV
-          echo "backend_s3_bucket=" >> $GITHUB_ENV
-          echo "backend_iam_role=" >> $GITHUB_ENV
-          echo "github_iam_role=" >> $GITHUB_ENV
-          echo "aws_account_id=" >> $GITHUB_ENV
-          echo "aws_region=" >> $GITHUB_ENV
-          echo "backend_dynamodb_table=" >> $GITHUB_ENV
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "full_image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+

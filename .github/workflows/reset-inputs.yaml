@@ -1,0 +1,22 @@
+name: Reset Inputs
+on:
+  workflow_dispatch:
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reset Input Variables
+        shell: bash
+        run: |
+          echo "Resetting input variables..."
+          echo "path_to_dockerfile=" >> $GITHUB_ENV
+          echo "docker_build_dir=" >> $GITHUB_ENV
+          echo "image_tag=" >> $GITHUB_ENV
+          echo "lifecycle_policy_file=" >> $GITHUB_ENV
+          echo "backend_s3_bucket=" >> $GITHUB_ENV
+          echo "backend_iam_role=" >> $GITHUB_ENV
+          echo "github_iam_role=" >> $GITHUB_ENV
+          echo "aws_account_id=" >> $GITHUB_ENV
+          echo "aws_region=" >> $GITHUB_ENV
+          echo "backend_dynamodb_table=" >> $GITHUB_ENV
