@@ -1,0 +1,36 @@
+name: Docker image build and publish
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency: ci-${{ github.repository }}-docker-pipeline
+
+jobs:
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: reset-inputs
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::886436961042:role/GitHUbOIDCRole
+          aws-region: ${{ inputs.aws_region }}
+      - name: get AWS credentials 
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::886436961042:role/GitHUbOIDCRole
+          aws-region: ${{ inputs.aws_region }}
+        shell: bash
+          aws sts get-caller-identity --debug
+
+
+
