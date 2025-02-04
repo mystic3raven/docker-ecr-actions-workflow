@@ -1,4 +1,4 @@
-name: Docker image build and publish
+name: Check STS Access
 on:
   workflow_dispatch:
 concurrency: ci-${{ github.repository }}-docker-pipeline
