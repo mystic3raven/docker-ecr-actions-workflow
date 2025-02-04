@@ -48,10 +48,6 @@ on:
 
 concurrency: ci-${{ github.repository }}-docker-pipeline
 
-jobs:
-  reset-inputs:
-    if: inputs.reset == 'true'
-    uses: ./.github/workflows/reset-inputs.yml
 
   docker:
     runs-on: ubuntu-latest
