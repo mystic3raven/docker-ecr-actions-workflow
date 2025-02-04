@@ -1,13 +1,12 @@
 name: Docker image build and publish
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
   pull_request:
     branches:
       - main
-  workflow_dispatch:
-
 concurrency: ci-${{ github.repository }}-docker-pipeline
 
 jobs:
