@@ -27,64 +27,6 @@ jobs:
         run: |
           aws sts get-caller-identity --query 'Account' --output text 
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
-
-      - name: Prepare ECR repo name based on the GitHub repository
-        shell: bash
-        run: |
-          set -eux
-          repo="${GITHUB_REPOSITORY,,}"
-          echo "ECR_REPO_NAME=${repo//\//_}" >> $GITHUB_ENV
-
-      - name: TF init
-        shell: bash
-        run: |
-          set -eux
-          terraform init -upgrade -reconfigure \
-            -backend-config='skip_metadata_api_check=true' \
-            -backend-config='skip_region_validation=true' \
-            -backend-config='skip_credentials_validation=true' \
-            -backend-config='region=${{ inputs.aws_region }}' \
-            -backend-config='bucket=${{ inputs.backend_s3_bucket }}' \
-            -backend-config='key=docker-ecr/terraform-${{ env.ECR_REPO_NAME }}.tfstate' \
-            -backend-config='dynamodb_table=${{ inputs.backend_dynamodb_table }}' \
-            -backend-config='role_arn=arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.backend_iam_role }}'
-        working-directory: ${{ github.action_path }}
-
-      - name: Create ECR repo [TF apply]
-        shell: bash
-        run: |
-          set -eux
-          terraform apply \
-            -var 'repository_name=${{ env.ECR_REPO_NAME }}' \
-            -var 'lifecycle_policy=${{ inputs.lifecycle_policy_file }}' \
-            -var 'iam_role=arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.github_iam_role }}' \
-            -var 'aws_account_id=${{ inputs.aws_account_id }}' \
-            -auto-approve
-        working-directory: ${{ github.action_path }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registries: ${{ inputs.aws_account_id }}
-
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-publish
-        shell: bash
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ env.ECR_REPO_NAME }}
-          IMAGE_TAG: ${{ inputs.image_tag }}
-        run: |
-          docker build "${{ inputs.docker_build_dir }}" -f "${{ inputs.path_to_dockerfile }}" -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          echo "IMAGE $IMAGE_TAG is pushed to $ECR_REGISTRY/$ECR_REPOSITORY"
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "full_image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
 
 
