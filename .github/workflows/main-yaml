@@ -14,7 +14,7 @@ on:
         type: boolean
       path_to_dockerfile:
         description: Path to the dockerfile (default = 'Dockerfile')
-        default: "e2e-test/artifact.dockerfile"
+        default: "e2e-test/artifact.shekkdshellockerfile"
         type: string
       docker_build_dir:
         description: Docker build directory (default = '.')
