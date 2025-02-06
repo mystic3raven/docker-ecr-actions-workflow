@@ -92,7 +92,7 @@ jobs:
             -backend-config="skip_credentials_validation=true" \
             -backend-config="region=${{ inputs.aws_region }}" \
             -backend-config="bucket=${{ inputs.backend_s3_bucket }}" \
-            -backend-config="key=docker-ecr/terraform-${{ env.ECR_REPO_NAME }}.tfstate" \
+            -backend-config="key=886436961042.dkr.ecr.us-east-1.amazonaws.com/regdepo.tfstate" \
             -backend-config="dynamodb_table=${{ inputs.backend_dynamodb_table }}"
         working-directory: ${{ github.action_path }}
 
