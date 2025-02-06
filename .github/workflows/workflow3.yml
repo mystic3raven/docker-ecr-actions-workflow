@@ -61,10 +61,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials for Terraform
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.github_iam_role }}
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.backend_iam_role }}
           aws-region: ${{ inputs.aws_region }}
           audience: sts.amazonaws.com
 
@@ -85,16 +85,15 @@ jobs:
         shell: bash
         run: |
           set -eux
-
           terraform init -upgrade -reconfigure \
             -backend-config="skip_metadata_api_check=true" \
             -backend-config="skip_region_validation=true" \
             -backend-config="skip_credentials_validation=true" \
             -backend-config="region=${{ inputs.aws_region }}" \
             -backend-config="bucket=${{ inputs.backend_s3_bucket }}" \
-            -backend-config="key=886436961042.dkr.ecr.us-west-2.amazonaws.com/regdepo2025.tfstate" \
+            -backend-config="key=docker-ecr/terraform-${{ env.ECR_REPO_NAME }}.tfstate" \
             -backend-config="dynamodb_table=${{ inputs.backend_dynamodb_table }}"
-        working-directory: ${{ github.action_path }}
+        working-directory: ${{ github.workspace }}
 
       - name: Apply Terraform to Create ECR Repo
         shell: bash
@@ -106,7 +105,14 @@ jobs:
             -var "iam_role=arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.github_iam_role }}" \
             -var "aws_account_id=${{ inputs.aws_account_id }}" \
             -auto-approve
-        working-directory: ${{ github.action_path }}
+        working-directory: ${{ github.workspace }}
+
+      - name: Configure AWS Credentials for ECR Access
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.github_iam_role }}
+          aws-region: ${{ inputs.aws_region }}
+          audience: sts.amazonaws.com
 
       - name: Login to Amazon ECR
         id: login-ecr
